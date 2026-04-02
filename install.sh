@@ -92,7 +92,7 @@ echo ""
 cd "$(dirname "$0")"
 
 # 创建临时下载目录
-DOWNLOAD_DIR="$(mktemp -d)"	rap "rm -rf $DOWNLOAD_DIR" EXIT
+DOWNLOAD_DIR="$(mktemp -d)"	trap "rm -rf $DOWNLOAD_DIR" EXIT
 
 # 检测系统架构
 ARCH=$(uname -m)
