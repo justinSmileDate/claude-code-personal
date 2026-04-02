@@ -13,10 +13,10 @@ if [ -z "$GLIBC_VERSION" ]; then
     exit 1
 fi
 
-REQUIRED_VERSION="2.18"
+REQUIRED_VERSION="2.34"
 if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$GLIBC_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
     echo "错误: GLIBC 版本过低 ($GLIBC_VERSION)，需要 $REQUIRED_VERSION 或更高版本"
-    echo "Claude Code 依赖 Bun，而 Bun 需要 GLIBC 2.18+"
+    echo "Claude Code 依赖 Bun，而 Bun 需要 GLIBC 2.34+"
     echo ""
     echo "=== 升级建议 ==="
     echo ""
@@ -69,14 +69,14 @@ if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$GLIBC_VERSION" | sort -V | head -n1)
             *)
                 echo "检测到操作系统: $PRETTY_NAME"
                 echo ""
-                echo "请升级到支持 GLIBC 2.18+ 的版本:"
+                echo "请升级到支持 GLIBC 2.34+ 的版本:"
                 echo "  - Ubuntu 20.04 LTS 或更高"
                 echo "  - CentOS/RHEL/Rocky Linux/AlmaLinux 8 或更高"
                 echo "  - Debian 10 (buster) 或更高"
                 ;;
         esac
     else
-        echo "请升级到支持 GLIBC 2.18+ 的操作系统版本:"
+        echo "请升级到支持 GLIBC 2.34+ 的操作系统版本:"
         echo "  - Ubuntu 20.04 LTS 或更高"
         echo "  - CentOS/RHEL/Rocky Linux/AlmaLinux 8 或更高"
         echo "  - Debian 10 (buster) 或更高"
@@ -92,7 +92,8 @@ echo ""
 cd "$(dirname "$0")"
 
 # 创建临时下载目录
-DOWNLOAD_DIR="$(mktemp -d)"	trap "rm -rf $DOWNLOAD_DIR" EXIT
+DOWNLOAD_DIR="$(mktemp -d)"
+trap "rm -rf $DOWNLOAD_DIR" EXIT
 
 # 检测系统架构
 ARCH=$(uname -m)
@@ -118,62 +119,96 @@ echo ""
 NODE_VERSION="25.1.0"
 BUN_VERSION="1.3.11"
 
-# 下载 Node.js
-echo "下载 Node.js v${NODE_VERSION} (${NODE_ARCH})..."
-NODE_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.xz"
-NODE_FILE="$DOWNLOAD_DIR/node.tar.xz"
-
-if command -v curl &> /dev/null; then
-    curl -fsSL "$NODE_URL" -o "$NODE_FILE" --progress-bar
-elif command -v wget &> /dev/null; then
-    wget -O "$NODE_FILE" "$NODE_URL" --progress=bar:force 2>&1 | tail -f -n +6
-else
-    echo "错误: 需要 curl 或 wget 来下载文件"
-    exit 1
+# 检测系统是否已安装 Node.js
+NODE_INSTALLED=false
+if command -v node &> /dev/null; then
+    NODE_INSTALLED=true
+    NODE_VERSION_INSTALLED=$(node --version)
+    echo "检测到系统已安装 Node.js: $NODE_VERSION_INSTALLED ✓"
 fi
 
-if [ ! -f "$NODE_FILE" ]; then
-    echo "错误: Node.js 下载失败"
-    exit 1
+# 检测系统是否已安装 Bun
+BUN_INSTALLED=false
+if command -v bun &> /dev/null; then
+    BUN_INSTALLED=true
+    BUN_VERSION_INSTALLED=$(bun --version)
+    echo "检测到系统已安装 Bun: $BUN_VERSION_INSTALLED ✓"
 fi
-echo "Node.js 下载完成"
 echo ""
 
-# 下载 Bun
-echo "下载 Bun v${BUN_VERSION} (${BUN_ARCH})..."
-BUN_URL="https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-${BUN_ARCH}.zip"
-BUN_FILE="$DOWNLOAD_DIR/bun.zip"
+# 下载并安装 Node.js（如果未安装）
+if [ "$NODE_INSTALLED" = false ]; then
+    echo "下载 Node.js v${NODE_VERSION} (${NODE_ARCH})..."
+    NODE_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.xz"
+    NODE_FILE="$DOWNLOAD_DIR/node.tar.xz"
 
-if command -v curl &> /dev/null; then
-    curl -fsSL "$BUN_URL" -o "$BUN_FILE" --progress-bar
-elif command -v wget &> /dev/null; then
-    wget -O "$BUN_FILE" "$BUN_URL" --progress=bar:force 2>&1 | tail -f -n +6
+    if command -v curl &> /dev/null; then
+        curl -fsSL "$NODE_URL" -o "$NODE_FILE" --progress-bar
+    elif command -v wget &> /dev/null; then
+        wget -O "$NODE_FILE" "$NODE_URL" --show-progress --progress=bar:force 2>&1
+    else
+        echo "错误: 需要 curl 或 wget 来下载文件"
+        exit 1
+    fi
+
+    if [ ! -f "$NODE_FILE" ]; then
+        echo "错误: Node.js 下载失败"
+        exit 1
+    fi
+    echo "Node.js 下载完成"
+    echo ""
+
+    echo "安装 Node.js..."
+    mkdir -p "$HOME/.local"
+    rm -rf "$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}"
+    tar -xf "$NODE_FILE" -C "$HOME/.local"
+
+    # 为当前会话设置 PATH
+    export PATH="$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}/bin:$PATH"
+
+    # 添加 PATH 到 .bashrc
+    NODE_PATH="\$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}/bin"
+    if ! grep -q "$NODE_PATH" ~/.bashrc; then
+        echo "添加 Node.js PATH 到 .bashrc..."
+        echo "export PATH=\"$NODE_PATH:\$PATH\"" >> ~/.bashrc
+    fi
 fi
 
-if [ ! -f "$BUN_FILE" ]; then
-    echo "错误: Bun 下载失败"
-    exit 1
-fi
-echo "Bun 下载完成"
-echo ""
+# 下载并安装 Bun（如果未安装）
+if [ "$BUN_INSTALLED" = false ]; then
+    echo "下载 Bun v${BUN_VERSION} (${BUN_ARCH})..."
+    BUN_URL="https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-${BUN_ARCH}.zip"
+    BUN_FILE="$DOWNLOAD_DIR/bun.zip"
 
-# 安装 Node.js
-echo "安装 Node.js..."
-mkdir -p "$HOME/.local"
-rm -rf "$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}"
-tar -xf "$NODE_FILE" -C "$HOME/.local"
+    if command -v curl &> /dev/null; then
+        curl -fsSL "$BUN_URL" -o "$BUN_FILE" --progress-bar
+    elif command -v wget &> /dev/null; then
+        wget -O "$BUN_FILE" "$BUN_URL" --show-progress --progress=bar:force 2>&1 | grep -oP '(\d+%|\[=+\s*\])'
+    fi
 
-# 安装 Bun
-echo "安装 Bun..."
-rm -rf "$HOME/.local/bun"
-mkdir -p "$HOME/.local/bun"
-unzip -o "$BUN_FILE" -d "$HOME/.local/bun"
+    if [ ! -f "$BUN_FILE" ]; then
+        echo "错误: Bun 下载失败"
+        exit 1
+    fi
+    echo "Bun 下载完成"
+    echo ""
 
-# 为当前会话设置 PATH
-export PATH="$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}/bin:$PATH"
-BUN_BINARY=$(find "$HOME/.local/bun" -name 'bun' -type f | head -1)
-if [ -n "$BUN_BINARY" ]; then
-    export PATH="$(dirname "$BUN_BINARY"):$PATH"
+    echo "安装 Bun..."
+    rm -rf "$HOME/.local/bun"
+    mkdir -p "$HOME/.local/bun"
+    unzip -o "$BUN_FILE" -d "$HOME/.local/bun"
+
+    # 为当前会话设置 PATH
+    BUN_BINARY=$(find "$HOME/.local/bun" -name 'bun' -type f | head -1)
+    if [ -n "$BUN_BINARY" ]; then
+        export PATH="$(dirname "$BUN_BINARY"):$PATH"
+    fi
+
+    # 添加 PATH 到 .bashrc
+    if ! grep -q 'export PATH="$HOME/.local/bun:$PATH"' ~/.bashrc 2>/dev/null; then
+        echo "添加 Bun PATH 到 .bashrc..."
+        echo 'export PATH="$HOME/.local/bun:$PATH"' >> ~/.bashrc
+    fi
 fi
 
 # 验证安装
@@ -189,20 +224,6 @@ fi
 
 echo "Node.js 版本: $(node --version)"
 echo "Bun 版本: $(bun --version)"
-
-# 添加 PATH 到 .bashrc（如果还没有添加）
-NODE_PATH="\$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}/bin"
-BUN_DIR="\$HOME/.local/bun"
-
-if ! grep -q "$NODE_PATH" ~/.bashrc; then
-    echo "添加 Node.js PATH 到 .bashrc..."
-    echo "export PATH=\"$NODE_PATH:\$PATH\"" >> ~/.bashrc
-fi
-
-if ! grep -q "$BUN_DIR" ~/.bashrc; then
-    echo "添加 Bun PATH 到 .bashrc..."
-    echo "export PATH=\"$BUN_DIR/bun-${BUN_ARCH}:\$PATH\"" >> ~/.bashrc
-fi
 
 # 设置 Claude Code API 环境变量（需要配置离线大模型，请取消注释并替换IP:Port，pass_token，model_name）
 # echo "配置 API 环境变量..."
@@ -266,17 +287,17 @@ if [ ! -f "$CLAUDE_JSON" ]; then
 else
     # 使用 node 修改 JSON 文件
     node -e "
-    const fs = require('fs');
-    const path = '$CLAUDE_JSON';
-    let data = {};
-    try {
-        data = JSON.parse(fs.readFileSync(path, 'utf8'));
-    } catch (e) {
-        data = {};
-    }
-    data.hasCompletedOnboarding = true;
-    fs.writeFileSync(path, JSON.stringify(data, null, 2));
-    "
+const fs = require('fs');
+const path = '$CLAUDE_JSON';
+let data = {};
+try {
+    data = JSON.parse(fs.readFileSync(path, 'utf8'));
+} catch (e) {
+    data = {};
+}
+data.hasCompletedOnboarding = true;
+fs.writeFileSync(path, JSON.stringify(data, null, 2));
+"
 fi
 
 echo ""
