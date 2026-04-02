@@ -139,7 +139,7 @@ echo ""
 # 下载并安装 Node.js（如果未安装）
 if [ "$NODE_INSTALLED" = false ]; then
     echo "下载 Node.js v${NODE_VERSION} (${NODE_ARCH})..."
-    NODE_URL="https://nodejs.org/dist/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.xz"
+    NODE_URL="https://registry.npmmirror.com/-/binary/node/v${NODE_VERSION}/node-v${NODE_VERSION}-${NODE_ARCH}.tar.xz"
     NODE_FILE="$DOWNLOAD_DIR/node.tar.xz"
 
     if command -v curl &> /dev/null; then
@@ -177,7 +177,7 @@ fi
 # 下载并安装 Bun（如果未安装）
 if [ "$BUN_INSTALLED" = false ]; then
     echo "下载 Bun v${BUN_VERSION} (${BUN_ARCH})..."
-    BUN_URL="https://github.com/oven-sh/bun/releases/download/bun-v${BUN_VERSION}/bun-${BUN_ARCH}.zip"
+    BUN_URL="https://registry.npmmirror.com/-/binary/bun/bun-v${BUN_VERSION}/bun-${BUN_ARCH}.zip"
     BUN_FILE="$DOWNLOAD_DIR/bun.zip"
 
     if command -v curl &> /dev/null; then
@@ -226,18 +226,18 @@ echo "Node.js 版本: $(node --version)"
 echo "Bun 版本: $(bun --version)"
 
 # 设置 Claude Code API 环境变量（需要配置离线大模型，请取消注释并替换IP:Port，pass_token，model_name）
-# echo "配置 API 环境变量..."
-# if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
-#     echo 'export ANTHROPIC_BASE_URL="http://IP:Port"' >> ~/.bashrc
-# fi
+echo "配置 API 环境变量..."
+if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
+    echo 'export ANTHROPIC_BASE_URL="http://localhost:30000"' >> ~/.bashrc
+fi
 
-# if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
-#     echo 'export ANTHROPIC_AUTH_TOKEN="pass_token"' >> ~/.bashrc
-# fi
+if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
+    echo 'export ANTHROPIC_AUTH_TOKEN="123"' >> ~/.bashrc
+fi
 
-# if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
-#     echo 'export ANTHROPIC_MODEL="model_name"' >> ~/.bashrc
-# fi
+if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
+    echo 'export ANTHROPIC_MODEL="qwen3"' >> ~/.bashrc
+fi
 
 
 # 确保 bin/claude 存在且可执行
