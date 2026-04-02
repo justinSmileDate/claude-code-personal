@@ -66,3 +66,25 @@ Output the restored version:
 ```bash
 bun run version
 ```
+
+## Configure Offline LLM
+
+To configure an offline large language model, uncomment and replace the following environment variables:
+
+```bash
+# Set Claude Code API environment variables
+echo "Configuring API environment variables..."
+if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
+    echo 'export ANTHROPIC_BASE_URL="http://IP:Port"' >> ~/.bashrc
+fi
+
+if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
+    echo 'export ANTHROPIC_AUTH_TOKEN="pass_token"' >> ~/.bashrc
+fi
+
+if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
+    echo 'export ANTHROPIC_MODEL="model_name"' >> ~/.bashrc
+fi
+```
+
+Replace `IP:Port`, `pass_token`, and `model_name` with your actual values, then run `source ~/.bashrc` to apply the configuration.
