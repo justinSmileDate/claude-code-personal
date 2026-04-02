@@ -1,5 +1,12 @@
-#!/usr/bin/env bash
-set -euo pipefail
-ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-cd "$ROOT"
-exec bun run ./src/bootstrap-entry.ts "$@"
+#!/usr/bin/env bun
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const rootDir = join(__dirname, '..');
+
+// Set up environment
+process.env.CLAUDE_CODE_ROOT = rootDir;
+
+// Import and run the bootstrap entry
+await import(join(rootDir, 'src', 'bootstrap-entry.ts'));
