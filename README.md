@@ -66,3 +66,25 @@ bun run dev
 ```bash
 bun run version
 ```
+
+## 配置离线大模型
+
+如需配置离线大模型，请取消注释并替换以下环境变量：
+
+```bash
+# 设置 Claude Code API 环境变量
+echo "配置 API 环境变量..."
+if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
+    echo 'export ANTHROPIC_BASE_URL="http://IP:Port"' >> ~/.bashrc
+fi
+
+if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
+    echo 'export ANTHROPIC_AUTH_TOKEN="pass_token"' >> ~/.bashrc
+fi
+
+if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
+    echo 'export ANTHROPIC_MODEL="model_name"' >> ~/.bashrc
+fi
+```
+
+请将 `IP:Port`、`pass_token` 和 `model_name` 替换为实际值，然后执行 `source ~/.bashrc` 使配置生效。
