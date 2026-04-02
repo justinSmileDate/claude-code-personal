@@ -116,7 +116,7 @@ echo ""
 
 # Node.js 和 Bun 版本
 NODE_VERSION="25.1.0"
-BUN_VERSION="1.3.5"
+BUN_VERSION="1.3.11"
 
 # 下载 Node.js
 echo "下载 Node.js v${NODE_VERSION} (${NODE_ARCH})..."
