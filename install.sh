@@ -261,14 +261,12 @@ bun link --local 2>/dev/null || bun link 2>/dev/null || true
 
 # 创建全局可访问的 claude 快捷方式
 mkdir -p "$HOME/.local/bin"
+INSTALL_DIR="$(pwd)"
 cat > "$HOME/.local/bin/claude" << EOF
 #!/bin/bash
-export PATH="\$HOME/.local/node-v${NODE_VERSION}-${NODE_ARCH}/bin:\$PATH"
-BUN_BIN=\$(find "\$HOME/.local/bun" -name 'bun' -type f | head -1)
-if [ -n "\$BUN_BIN" ]; then
-    export PATH="\$(dirname "\$BUN_BIN"):\$PATH"
-fi
-cd "$(pwd)" && bun run ./src/bootstrap-entry.ts "\$@"
+export PATH="\$HOME/.local/node-v25.1.0-linux-x64/bin:\$PATH"
+export PATH="\$HOME/.local/bun/bun-linux-x64:\$PATH"
+bun run $INSTALL_DIR/src/bootstrap-entry.ts "\$@"
 EOF
 chmod +x "$HOME/.local/bin/claude"
 
