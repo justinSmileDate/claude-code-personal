@@ -13,10 +13,10 @@ if [ -z "$GLIBC_VERSION" ]; then
     exit 1
 fi
 
-REQUIRED_VERSION="2.34"
+REQUIRED_VERSION="2.18"
 if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$GLIBC_VERSION" | sort -V | head -n1)" != "$REQUIRED_VERSION" ]; then
     echo "错误: GLIBC 版本过低 ($GLIBC_VERSION)，需要 $REQUIRED_VERSION 或更高版本"
-    echo "Claude Code 依赖 Bun，而 Bun 需要 GLIBC 2.34+"
+    echo "Claude Code 依赖 Bun，而 Bun 需要 GLIBC 2.18+"
     echo ""
     echo "=== 升级建议 ==="
     echo ""
@@ -69,14 +69,14 @@ if [ "$(printf '%s\n' "$REQUIRED_VERSION" "$GLIBC_VERSION" | sort -V | head -n1)
             *)
                 echo "检测到操作系统: $PRETTY_NAME"
                 echo ""
-                echo "请升级到支持 GLIBC 2.34+ 的版本:"
+                echo "请升级到支持 GLIBC 2.18+ 的版本:"
                 echo "  - Ubuntu 20.04 LTS 或更高"
                 echo "  - CentOS/RHEL/Rocky Linux/AlmaLinux 8 或更高"
                 echo "  - Debian 10 (buster) 或更高"
                 ;;
         esac
     else
-        echo "请升级到支持 GLIBC 2.34+ 的操作系统版本:"
+        echo "请升级到支持 GLIBC 2.18+ 的操作系统版本:"
         echo "  - Ubuntu 20.04 LTS 或更高"
         echo "  - CentOS/RHEL/Rocky Linux/AlmaLinux 8 或更高"
         echo "  - Debian 10 (buster) 或更高"
