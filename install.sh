@@ -226,18 +226,18 @@ echo "Node.js 版本: $(node --version)"
 echo "Bun 版本: $(bun --version)"
 
 # 设置 Claude Code API 环境变量（需要配置离线大模型，请取消注释并替换IP:Port，pass_token，model_name）
-echo "配置 API 环境变量..."
-if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
-    echo 'export ANTHROPIC_BASE_URL="http://localhost:30000"' >> ~/.bashrc
-fi
+# echo "配置 API 环境变量..."
+# if ! grep -q "ANTHROPIC_BASE_URL" ~/.bashrc; then
+#     echo 'export ANTHROPIC_BASE_URL="http://IP:Port"' >> ~/.bashrc
+# fi
 
-if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
-    echo 'export ANTHROPIC_AUTH_TOKEN="123"' >> ~/.bashrc
-fi
+# if ! grep -q "ANTHROPIC_AUTH_TOKEN" ~/.bashrc; then
+#     echo 'export ANTHROPIC_AUTH_TOKEN="pass_token"' >> ~/.bashrc
+# fi
 
-if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
-    echo 'export ANTHROPIC_MODEL="qwen3"' >> ~/.bashrc
-fi
+# if ! grep -q "ANTHROPIC_MODEL" ~/.bashrc; then
+#     echo 'export ANTHROPIC_MODEL="model_name"' >> ~/.bashrc
+# fi
 
 
 # 确保 bin/claude 存在且可执行
